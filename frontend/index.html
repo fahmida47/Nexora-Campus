@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Nexora Campus</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="logo">
+        <span class="logo-mark">N</span>
+        <span>Nexora<span class="logo-highlight">Campus</span></span>
+      </div>
+
+      <div class="live-status">
+        <span class="status-dot"></span>
+        System Live
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main>
+      <section class="hero">
+        <div class="hero-content">
+          <div class="hero-badge">SMART UNIVERSITY PLATFORM</div>
+
+          <h1>
+            Stay Connected.<br />
+            <span>Stay Informed.</span>
+          </h1>
+
+          <p>
+            Your centralized campus space for important university
+            announcements, academic updates, events, and career opportunities.
+          </p>
+
+          <a href="#notices" class="hero-button">
+            Explore Notices
+            <span>↓</span>
+          </a>
+        </div>
+
+        <div class="hero-visual">
+          <div class="orb orb-one"></div>
+          <div class="orb orb-two"></div>
+
+          <div class="floating-card">
+            <div class="floating-icon">✦</div>
+
+            <div>
+              <strong>Campus Updates</strong>
+              <p>Everything important, in one place.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notices Section -->
+      <section class="notice-section" id="notices">
+        <div class="section-heading">
+          <div>
+            <span class="section-label">LATEST UPDATES</span>
+            <h2>Campus Notices</h2>
+          </div>
+
+          <p>Stay updated with the latest announcements from your campus.</p>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">Loading notices...</div>
+
+        <!-- Notices will come from API -->
+        <div id="notices-container" class="notice-grid"></div>
+
+        <!-- Error -->
+        <div id="error-message" class="error-message"></div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>
+        © 2026 Nexora Campus
+        <span>•</span>
+        Connect. Inform. Engage.
+      </p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
