@@ -1,0 +1,107 @@
+name: Nexora-Campus
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # 3. Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      # 4. Build backend
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      # 5. Setup SSH agent
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      # 6. Check VPS configuration
+      - name: Check VPS configuration
+        run: |
+          echo "VPS_USERNAME is set: ${{ secrets.VPS_USERNAME != '' }}"
+          echo "VPS_HOST is set: ${{ secrets.VPS_HOST != '' }}"
+          echo "SSH key is set: ${{ secrets.VPS_SSH_KEY != '' }}"
+
+      # 7. Test SSH connection
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}" \
+            "whoami && pwd"
+
+      # 8. Create project directories on VPS
+      - name: Prepare VPS directories
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}" \
+            "mkdir -p ~/Nexora-Campus/backend ~/Nexora-Campus/frontend"
+
+      # 9. Upload backend
+      - name: Upload backend
+        run: |
+          scp -o StrictHostKeyChecking=no -r \
+            backend/src \
+            backend/package.json \
+            backend/package-lock.json \
+            backend/tsconfig.json \
+            backend/dist \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:~/Nexora-Campus/backend/"
+
+      # 10. Upload frontend
+      - name: Upload frontend
+        run: |
+          scp -o StrictHostKeyChecking=no -r \
+            frontend/index.html \
+            frontend/script.js \
+            frontend/style.css \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:~/Nexora-Campus/frontend/"
+
+      # 11. Install dependencies on VPS
+      - name: Install dependencies on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}" \
+            "cd ~/Nexora-Campus/backend && npm ci --omit=dev"
+
+      # 12. Restart application with PM2
+      - name: Restart application
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}" \
+            "cd ~/Nexora-Campus/backend && pm2 restart nexora_campus || pm2 start dist/server.js --name nexora_campus && pm2 save"
+
+      # 13. Verify PM2
+      - name: Verify PM2
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}" \
+            "pm2 status"
+
+      # 14. Health check
+      - name: Verify deployment
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}" \
+            "curl -f http://127.0.0.1:3000/api/health"
